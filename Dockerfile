@@ -1,25 +1,20 @@
-FROM maven:3.9.9-eclipse-temurin-21 AS builder
-
+# Build stage: Maven wrapper JAR is not tracked in git, so use the official Maven image.
+FROM maven:3.9.9-eclipse-temurin-21-alpine AS build
 WORKDIR /app
 
-# Cache dependencies
 COPY pom.xml .
-RUN mvn dependency:go-offline
-
-# Copy source
 COPY src ./src
 
-# Build the app
-RUN mvn clean package -DskipTests
+RUN mvn -B -DskipTests package
 
-FROM eclipse-temurin:21-jdk-jammy
-
+FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
-# Copy built jar
-COPY --from=builder /app/target/*.jar app.jar
+RUN addgroup -S spring && adduser -S spring -G spring
 
-EXPOSE 8080
+COPY --from=build /app/target/results-service-*.jar app.jar
 
-# Run the app
-ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-Xms128m", "-Xmx2G", "-jar", "app.jar"]
+USER spring:spring
+EXPOSE 8083
+
+ENTRYPOINT ["java", "-jar", "app.jar"]
