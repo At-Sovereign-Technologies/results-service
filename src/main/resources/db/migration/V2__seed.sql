@@ -1,19 +1,24 @@
-INSERT INTO result (election_id, candidate_name, votes)
-SELECT 
-    e_id,
+INSERT INTO result (election_id, candidate_name, votes) VALUES
 
-    (
-        ARRAY[
-            'Juan Pérez',
-            'María Gómez',
-            'Carlos Rodríguez',
-            'Ana Martínez',
-            'Luis Fernández',
-            'Sofía Ramírez'
-        ]
-    )[c_id] AS candidate_name,
+-- Presidencial
+(1, 'Juan Pérez', 5200000),
+(1, 'María Gómez', 5100000),
+(1, 'Carlos Rodríguez', 1200000),
 
-    (floor(random() * 8000) + 1000)::int
+-- Senado
+(2, 'Partido A', 2200000),
+(2, 'Partido B', 2100000),
+(2, 'Partido C', 1800000),
 
-FROM generate_series(1, 3) e_id,   -- 3 elecciones
-     generate_series(1, 6) c_id;   -- 6 candidatos
+-- Alcaldía Bogotá
+(3, 'Luis Martínez', 800000),
+(3, 'Ana Torres', 780000),
+(3, 'Diego Ramírez', 300000),
+
+-- Gobernación Antioquia
+(4, 'Sofía Herrera', 600000),
+(4, 'Jorge Castillo', 580000),
+
+-- Consulta
+(5, 'Sí', 3500000),
+(5, 'No', 2700000);
