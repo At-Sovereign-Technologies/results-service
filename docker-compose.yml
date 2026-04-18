@@ -1,13 +1,15 @@
 services:
   postgres:
     image: postgres:14
-    container_name: postgres-electoral
-    network_mode: "host"
+    container_name: postgres-results
+    ports:
+      - "5432:5432"
     environment:
-      POSTGRES_USER: postgres
+      POSTGRES_DB: results_db
+      POSTGRES_USER: results_user
       POSTGRES_PASSWORD: 123456
     volumes:
       - postgres_data:/var/lib/postgresql/data
-
+      
 volumes:
   postgres_data:
