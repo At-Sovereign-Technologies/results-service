@@ -51,7 +51,7 @@ class ResultRepositoryTest {
     @Test
     @DisplayName("RR-01 | EQ-2 | findByElectionId retorna solo candidatos de esa elección")
     void should_returnOnlyCandidatesForElection_when_queryingById() {
-        List<r> results = repository.findByElectionId(1L);
+        List<Result> results = repository.findByElectionId(1L);
 
         assertEquals(3, results.size(),
                 "La presidencial debe tener exactamente 3 candidatos");
@@ -67,7 +67,7 @@ class ResultRepositoryTest {
     @Test
     @DisplayName("RR-02 | EQ-20 | Los votos se persisten sin alteración en la base de datos")
     void should_persistVotesIntact_when_savedToDatabase() {
-        List<r> results = repository.findByElectionId(1L);
+        List<Result> results = repository.findByElectionId(1L);
 
         Result juanPerez = results.stream()
                 .filter(r -> r.getCandidateName().equals("Juan Pérez"))
@@ -86,7 +86,7 @@ class ResultRepositoryTest {
     @Test
     @DisplayName("RR-03 | EQ-20 | Resultados de Senado no aparecen al consultar Presidencia")
     void should_isolateResultsByElection_when_multipleElectionsExist() {
-        List<r> presidencial = repository.findByElectionId(1L);
+        List<Result> presidencial = repository.findByElectionId(1L);
 
         boolean contieneSenado = presidencial.stream()
                 .anyMatch(r -> r.getCandidateName().equals("Partido A")
@@ -104,7 +104,7 @@ class ResultRepositoryTest {
     @Test
     @DisplayName("RR-04 | EQ-3 | Doble Verdad: suma de votos en BD coincide con total esperado")
     void should_matchExpectedTotal_when_summingVotesFromDB() {
-        List<r> results = repository.findByElectionId(1L);
+        List<Result> results = repository.findByElectionId(1L);
 
         int totalCalculado = results.stream()
                 .mapToInt(Result::getVotes)
@@ -121,7 +121,7 @@ class ResultRepositoryTest {
     @Test
     @DisplayName("RR-05 | EQ-2 | Retorna lista vacía para elección no registrada")
     void should_returnEmptyList_when_electionDoesNotExist() {
-        List<r> results = repository.findByElectionId(999L);
+        List<Result> results = repository.findByElectionId(999L);
 
         assertTrue(results.isEmpty(),
                 "No debe retornar resultados para una elección no registrada");
