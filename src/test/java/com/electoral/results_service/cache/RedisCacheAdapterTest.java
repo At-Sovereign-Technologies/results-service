@@ -11,6 +11,7 @@ package com.electoral.results_service.cache;
 
 import com.electoral.results_service.dto.CandidateResult;
 import com.electoral.results_service.dto.ResultsResponse;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -76,7 +77,7 @@ class RedisCacheAdapterTest {
 
         when(valueOperations.get(key)).thenReturn(expected);
 
-        Object result = cacheAdapter.get(key);
+        ResultsResponse result = cacheAdapter.get(key, new TypeReference<ResultsResponse>() {});
 
         assertNotNull(result);
         assertEquals(expected, result);
@@ -92,8 +93,7 @@ class RedisCacheAdapterTest {
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
         when(valueOperations.get("results:999")).thenReturn(null);
 
-        Object result = cacheAdapter.get("results:999");
-
+        Object result = cacheAdapter.get("results:999", new TypeReference<ResultsResponse>() {});
         assertNull(result);
     }
 
@@ -114,8 +114,8 @@ class RedisCacheAdapterTest {
         when(valueOperations.get("results:1")).thenReturn(eleccion1);
         when(valueOperations.get("results:2")).thenReturn(eleccion2);
 
-        Object result1 = cacheAdapter.get("results:1");
-        Object result2 = cacheAdapter.get("results:2");
+        Object result1 = cacheAdapter.get("results:1", new TypeReference<ResultsResponse>() {});
+        Object result2 = cacheAdapter.get("results:2", new TypeReference<ResultsResponse>() {});
 
         assertNotEquals(result1, result2,
                 "Las claves de caché para diferentes elecciones deben retornar datos distintos");
@@ -134,7 +134,7 @@ class RedisCacheAdapterTest {
 
         assertDoesNotThrow(() -> {
             try {
-                cacheAdapter.get("results:1");
+                cacheAdapter.get("results:1", new TypeReference<ResultsResponse>() {});
             } catch (RuntimeException e) {
                 // tolerancia a fallos: el sistema maneja esto
             }

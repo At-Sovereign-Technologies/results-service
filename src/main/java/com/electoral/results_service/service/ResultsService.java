@@ -12,6 +12,7 @@ import com.electoral.results_service.dto.ResultsResponse;
 import com.electoral.results_service.entity.Result;
 import com.electoral.results_service.exception.ResourceNotFoundException;
 import com.electoral.results_service.repository.ResultRepository;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,10 +29,9 @@ public class ResultsService {
 
         String key = "results:" + electionId;
 
-        Object cached = cache.get(key);
+        ResultsResponse cached = cache.get(key, new TypeReference<ResultsResponse>() {});
         if (cached != null) {
-            log.info("CACHE HIT - electionId={}", electionId);
-            return (ResultsResponse) cached;
+            return cached;
         }
 
         log.info("CACHE MISS - querying DB - electionId={}", electionId);

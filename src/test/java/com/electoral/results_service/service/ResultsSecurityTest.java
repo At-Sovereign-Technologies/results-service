@@ -15,6 +15,7 @@ import com.electoral.results_service.dto.CandidateResult;
 import com.electoral.results_service.dto.ResultsResponse;
 import com.electoral.results_service.entity.Result;
 import com.electoral.results_service.repository.ResultRepository;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -26,6 +27,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -55,7 +58,7 @@ class ResultsSecurityTest {
             new Result(3L, 1L, "Carlos Rodríguez",    1200000)
         );
 
-        when(cache.get("results:1")).thenReturn(null);
+        when(cache.get("results:1", new TypeReference<ResultsResponse>() {})).thenReturn(null);
         when(repository.findByElectionId(1L)).thenReturn(results);
 
         ResultsResponse response = service.getResults(1L);
@@ -80,7 +83,7 @@ class ResultsSecurityTest {
             new Result(3L, 1L, "Carlos Rodríguez",    1200000)
         );
 
-        when(cache.get("results:1")).thenReturn(null);
+        when(cache.get("results:1", new TypeReference<ResultsResponse>() {})).thenReturn(null);
         when(repository.findByElectionId(1L)).thenReturn(results);
 
         ResultsResponse response = service.getResults(1L);
@@ -103,7 +106,7 @@ class ResultsSecurityTest {
             new Result(3L, 1L, "Carlos Rodríguez",    1200000)
         );
 
-        when(cache.get("results:1")).thenReturn(null);
+        when(cache.get("results:1", new TypeReference<ResultsResponse>() {})).thenReturn(null);
         when(repository.findByElectionId(1L)).thenReturn(results);
 
         ResultsResponse response = service.getResults(1L);
@@ -130,7 +133,7 @@ class ResultsSecurityTest {
             new Result(1L, 1L, "Juan Pérez", 5200000)
         );
 
-        when(cache.get("results:1")).thenReturn(null);
+        when(cache.get("results:1", new TypeReference<ResultsResponse>() {})).thenReturn(null);
         when(repository.findByElectionId(1L)).thenReturn(presidencialResults);
 
         ResultsResponse response = service.getResults(1L);
@@ -150,7 +153,7 @@ class ResultsSecurityTest {
     @Test
     @DisplayName("SEC-05 | EQ-19 | No retorna datos por defecto cuando la BD está vacía para esa elección")
     void should_throwException_when_noResultsInDatabase() {
-        when(cache.get("results:99")).thenReturn(null);
+        when(cache.get("results:99", new TypeReference<ResultsResponse>() {})).thenReturn(null);
         when(repository.findByElectionId(99L)).thenReturn(List.of());
 
         assertThrows(
@@ -172,7 +175,7 @@ class ResultsSecurityTest {
             new Result(1L, 1L, "Juan Pérez", 5200000)
         );
 
-        when(cache.get("results:1")).thenReturn(null);
+        when(cache.get("results:1", new TypeReference<ResultsResponse>() {})).thenReturn(null);
         when(repository.findByElectionId(1L)).thenReturn(results);
 
         service.getResults(1L);
@@ -193,7 +196,7 @@ class ResultsSecurityTest {
             new Result(1L, 1L, "Juan Pérez", 5200000)
         );
 
-        when(cache.get("results:1")).thenReturn(null);
+        when(cache.get("results:1", new TypeReference<ResultsResponse>() {})).thenReturn(null);
         when(repository.findByElectionId(1L)).thenReturn(results);
 
         service.getResults(1L);
@@ -219,7 +222,7 @@ class ResultsSecurityTest {
                 ))
                 .build();
 
-        when(cache.get("results:1")).thenReturn(cached);
+        when(cache.get("results:1", new TypeReference<ResultsResponse>() {})).thenReturn(cached);
 
         ResultsResponse response = service.getResults(1L);
 
@@ -247,7 +250,7 @@ class ResultsSecurityTest {
             new Result(2L, 1L, "Candidato Fantasma",  0)
         );
 
-        when(cache.get("results:1")).thenReturn(null);
+        when(cache.get("results:1", new TypeReference<ResultsResponse>() {})).thenReturn(null);
         when(repository.findByElectionId(1L)).thenReturn(results);
 
         ResultsResponse response = service.getResults(1L);
