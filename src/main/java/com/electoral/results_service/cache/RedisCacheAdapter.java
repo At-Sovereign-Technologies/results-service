@@ -1,52 +1,39 @@
 package com.electoral.results_service.cache;
 
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
 public class RedisCacheAdapter {
 
-    private final RedisTemplate<String, String> redisTemplate;
-    private final ObjectMapper objectMapper;
+    private final RedisTemplate<String, Object> redisTemplate;
 
-    public <T> T get(String key, TypeReference<T> typeRef) {
-        String json = redisTemplate.opsForValue().get(key);
+    private static final Logger log = LoggerFactory.getLogger(RedisCacheAdapter.class);
 
-        if (json == null) return null;
-
-        try {
-            return objectMapper.readValue(json, typeRef);
-        } catch (Exception e) {
-            throw new RuntimeException("Error deserializing cache", e);
-        }
+    @CircuitBreaker(name = "redisCache", fallbackMethod = "getFallback")
+    public Object get(String key) {
+        return redisTemplate.opsForValue().get(key);
     }
 
-    public <T> T get(String key, Class<T> clazz) {
-        String json = redisTemplate.opsForValue().get(key);
-
-        if (json == null) return null;
-        
-        try {
-            return objectMapper.readValue(json, clazz);
-        } catch (Exception e) {
-            throw new RuntimeException("Error deserializing cache", e);
-        }
+    public Object getFallback(String key, Throwable t) {
+        log.warn("CACHE FALLBACK (GET) - key={} - {}", key, t.getMessage());
+        return null;
     }
 
+    @CircuitBreaker(name = "redisCache", fallbackMethod = "setFallback")
     public void set(String key, Object value) {
-        try {
-            String json = objectMapper.writeValueAsString(value);
-            redisTemplate.opsForValue().set(key, json, 10, TimeUnit.MINUTES);
-        } catch (Exception e) {
-            throw new RuntimeException("Error serializing cache", e);
-        }
+        redisTemplate.opsForValue().set(key, value, Duration.ofMinutes(5));
+    }
+
+    public void setFallback(String key, Object value, Throwable t) {
+        log.warn("CACHE FALLBACK (SET) - key={} - {}", key, t.getMessage());
     }
 }
