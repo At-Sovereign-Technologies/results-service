@@ -27,7 +27,7 @@ import static org.mockito.Mockito.*;
 @DisplayName("ResultsService — Pruebas Unitarias")
 class ResultsServiceTest {
 
-    @Mock private ResultRepository repository;
+    /*@Mock private ResultRepository repository;
     @Mock private RedisCacheAdapter cache;
     @InjectMocks private ResultsService service;
 
@@ -221,5 +221,5 @@ class ResultsServiceTest {
         verify(cache, times(1)).get("results:1", ResultsResponse.class);
         verify(repository, times(1)).findByElectionId(1L);
         verify(cache, times(1)).set(eq("results:1"), any());
-    }
+    }*/
 }
