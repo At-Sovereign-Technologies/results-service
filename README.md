@@ -2,184 +2,174 @@
 
 ## 1. Descripción
 
-El Results Service es un microservicio de solo lectura encargado de exponer resultados agregados de elecciones. Forma parte del sistema ciudadano bajo un enfoque CQRS (lado de consulta).
+El Results Service es un microservicio de solo lectura encargado de
+exponer resultados agregados de elecciones.
 
-Incluye cache con Redis para optimizar consultas frecuentes.
+Forma parte del lado de consulta bajo el enfoque CQRS e implementa una
+capa de cache con Redis, incluyendo mecanismos de resiliencia para
+tolerar fallos del servicio de cache.
 
----
+------------------------------------------------------------------------
 
 ## 2. Tecnologías
 
-- Java 21
-- Spring Boot 3.x
-- Spring Web
-- Spring Data JPA
-- PostgreSQL
-- Redis
-- Flyway
-- Springdoc OpenAPI (Swagger)
-- Maven
+-   Java 21
+-   Spring Boot 3.x
+-   Spring Web
+-   Spring Data JPA
+-   PostgreSQL
+-   Redis
+-   Resilience4j (Circuit Breaker)
+-   Flyway
+-   Springdoc OpenAPI (Swagger)
+-   Maven
 
----
+------------------------------------------------------------------------
 
 ## 3. Arquitectura
 
-Capas del servicio:
+Arquitectura por capas:
 
-- Controller → expone endpoints REST
-- Service → lógica de negocio y agregación
-- Repository → acceso a datos
-- Cache Adapter → Redis (cache-aside)
-- DTOs → respuestas estructuradas
+-   Controller: Exposición de endpoints REST
+-   Service: Lógica de negocio y orquestación
+-   Repository: Acceso a datos
+-   Cache Adapter: Integración con Redis
+-   Circuit Breaker: Manejo de fallos en cache
+-   Mapper: Transformación de entidades a DTOs
 
-### Estrategia de cache
+------------------------------------------------------------------------
 
-1. Se consulta Redis
-2. Si no existe → consulta DB
-3. Se guarda en cache
+## 4. Estrategia de Cache
 
----
+Se implementa el patrón cache-aside con resiliencia:
 
-## 4. Versionamiento API
+1.  Se consulta Redis
+2.  Si no existe o falla, se consulta la base de datos
+3.  Se almacena el resultado en cache
+4.  En caso de fallo de Redis, el sistema continúa operando con DB
 
-```
-/api/v1/results
-```
+------------------------------------------------------------------------
 
----
+## 5. Resiliencia (Circuit Breaker)
 
-## 5. Variables de entorno (.env)
+Se implementa Circuit Breaker con Resilience4j:
 
-```
-DB_URL=jdbc:postgresql://localhost:5432/results_db
-DB_USER=results_user
+-   Detecta fallos en Redis
+-   Evita llamadas innecesarias a servicios caídos
+-   Permite fallback automático hacia la base de datos
+-   Mejora la latencia en escenarios de fallo
+
+Estados:
+
+-   CLOSED → operación normal
+-   OPEN → Redis deshabilitado temporalmente
+-   HALF-OPEN → prueba de recuperación
+
+------------------------------------------------------------------------
+
+## 6. Versionamiento API
+
+/api/v1/\*
+
+------------------------------------------------------------------------
+
+## 7. Variables de entorno
+
+DB_URL=jdbc:postgresql://localhost:5432/results_db\
+DB_USER=results_user\
 DB_PASSWORD=123456
 
-REDIS_HOST=localhost
+REDIS_HOST=localhost\
 REDIS_PORT=6379
 
 PORT=8083
-```
 
----
+------------------------------------------------------------------------
 
-## 6. Base de datos
+## 8. Base de datos
 
-### Crear DB y usuario
-
-```sql
-CREATE DATABASE results_db;
-
-CREATE USER results_user WITH PASSWORD '123456';
-
+CREATE DATABASE results_db;\
+CREATE USER results_user WITH PASSWORD '123456';\
 GRANT ALL PRIVILEGES ON DATABASE results_db TO results_user;
 
-\c results_db
+`\c r`{=tex}esults_db\
 GRANT ALL ON SCHEMA public TO results_user;
-```
 
----
+------------------------------------------------------------------------
 
-## 7. Migraciones (Flyway)
+## 9. Migraciones (Flyway)
 
 Ubicación:
 
-```
 src/main/resources/db/migration
-```
 
-### V1__init.sql
+### V1\_\_init.sql
 
-```sql
-CREATE TABLE result (
-    id SERIAL PRIMARY KEY,
-    election_id BIGINT,
-    candidate_name VARCHAR(255),
-    votes INT
-);
-```
+CREATE TABLE result ( id SERIAL PRIMARY KEY, election_id BIGINT,
+candidate_name VARCHAR(255), votes INT );
 
-### V2__seed.sql
+### V2\_\_seed.sql
 
-```sql
-INSERT INTO result (election_id, candidate_name, votes) VALUES
-(1, 'Candidato A', 600),
-(1, 'Candidato B', 400);
-```
+INSERT INTO result (election_id, candidate_name, votes) VALUES (1,
+'Candidato A', 600), (1, 'Candidato B', 400);
 
----
+------------------------------------------------------------------------
 
-## 8. Ejecución
+## 10. Redis
 
-```bash
-export $(grep -v '^#' .env | xargs)
+sudo systemctl start redis-server\
+redis-cli ping
+
+Respuesta esperada: PONG
+
+------------------------------------------------------------------------
+
+## 11. Ejecución
+
+export \$(grep -v '\^#' .env \| xargs)\
 mvn spring-boot:run
-```
 
----
+------------------------------------------------------------------------
 
-## 9. Swagger
+## 12. Swagger
 
-```
 http://localhost:8083/swagger-ui.html
-```
 
----
+------------------------------------------------------------------------
 
-## 10. Endpoints
+## 13. Endpoint
 
-### Obtener resultados por elección
-
-```
 GET /api/v1/results?electionId=1
-```
 
----
+------------------------------------------------------------------------
 
-## 11. Respuesta
+## 14. Respuesta
 
-```json
-{
-  "electionId": 1,
-  "totalVotes": 1000,
-  "candidates": [
-    { "name": "Candidato A", "votes": 600 },
-    { "name": "Candidato B", "votes": 400 }
-  ]
-}
-```
+{ "electionId": 1, "totalVotes": 1000, "candidates": \[ { "name":
+"Candidato A", "votes": 600 }, { "name": "Candidato B", "votes": 400 }
+\] }
 
----
+------------------------------------------------------------------------
 
-## 12. Manejo de errores
+## 15. Observabilidad
 
-### 404
+Logging estructurado:
 
-```json
-{
-  "status": 404,
-  "error": "NOT_FOUND",
-  "message": "Results not found"
-}
-```
+-   CACHE HIT
+-   CACHE MISS
+-   CACHE STORE
+-   CACHE ERROR
+-   CACHE FALLBACK
+-   Circuit Breaker events (OPEN, CLOSED, HALF-OPEN)
 
----
+------------------------------------------------------------------------
 
-## 13. Cache (Redis)
+## 16. Estado
 
-Claves:
+Microservicio funcional, resiliente y listo para integración:
 
-```
-results:{electionId}
-```
-
----
-
-## 14. Estado
-
-Microservicio funcional con:
-
-- Migraciones automatizadas
-- Cache en Redis
-- Endpoints listos
-- Integración lista para API Gateway
+-   API REST operativa
+-   PostgreSQL integrado
+-   Redis con tolerancia a fallos
+-   Circuit Breaker activo
+-   Documentación Swagger
