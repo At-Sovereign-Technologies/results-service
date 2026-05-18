@@ -28,7 +28,7 @@ jobs:
 
     env:
       DB_URL: jdbc:postgresql://localhost:5432/results_db
-      DB_USERNAME: postgres
+      DB_USER: postgres
       DB_PASSWORD: postgres
 
     steps:
