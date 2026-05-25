@@ -9,16 +9,9 @@ import java.time.Instant;
 import java.util.concurrent.atomic.AtomicReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-/**
- * Caché con TTL fijo (30s, constante) del estado del calendario. Encapsula la
- * política de fallo seguro: ante cualquier incertidumbre el motor regresa a
- * {@link EstadoMotor#JORNADA_ACTIVA}, el estado más restrictivo.
- *
- * <p>Único punto donde se calcula {@code numeroDia} a partir de la fecha de inicio.
- * Único punto que invoca {@link AuditoriaTransicion} cuando hay cambio de estado.
- */
 @Component
 public class EstadoJornadaProvider {
 
@@ -31,6 +24,7 @@ public class EstadoJornadaProvider {
     private final AtomicReference<EstadoJornada> cache = new AtomicReference<>();
     private final AtomicReference<Instant> ultimaSincronizacionExitosa = new AtomicReference<>();
 
+    @Autowired
     public EstadoJornadaProvider(CalendarioElectoralPort port, AuditoriaTransicion auditoria) {
         this(port, auditoria, Clock.systemUTC());
     }
