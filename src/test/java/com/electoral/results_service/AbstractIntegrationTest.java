@@ -1,6 +1,8 @@
 package com.electoral.results_service;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Assumptions;
+import org.testcontainers.DockerClientFactory;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.GenericContainer;
@@ -11,6 +13,10 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers
 public abstract class AbstractIntegrationTest {
 
+    @BeforeAll
+    public static void assumeDockerAvailable() {
+        Assumptions.assumeTrue(DockerClientFactory.instance().isDockerAvailable(), "Docker not available - skipping integration tests");
+    }
     @Container
     public static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres:15-alpine")
             .withDatabaseName("results_db")
