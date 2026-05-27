@@ -8,6 +8,7 @@ package com.electoral.results_service.controller;
 
 import com.electoral.results_service.dto.CandidateResult;
 import com.electoral.results_service.dto.ResultsResponse;
+import com.electoral.results_service.exception.GlobalExceptionHandler;
 import com.electoral.results_service.exception.ResourceNotFoundException;
 import com.electoral.results_service.service.ResultsService;
 
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
@@ -24,6 +26,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ResultsController.class)
+@Import(GlobalExceptionHandler.class)
 @DisplayName("ResultsController — Integración MockMvc")
 class ResultsControllerTest {
 
